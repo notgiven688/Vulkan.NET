@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+﻿using System;
 using Evergine.Bindings.Vulkan;
 
 namespace KHRRTXHelloTriangle
@@ -8,15 +8,23 @@ namespace KHRRTXHelloTriangle
         const uint WIDTH = 800;
         const uint HEIGHT = 600;       
 
-        private Form window;
+        private IntPtr window;
 
         private void InitWindow()
         {
-            window = new Form();
-            window.Text = "Vulkan Triangle Rasterization";
-            window.Size = new System.Drawing.Size((int)WIDTH, (int)HEIGHT);
-            window.FormBorderStyle = FormBorderStyle.FixedToolWindow;
-            window.Show();
+            GLFW.glfwInit();
+
+            GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API);
+            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
+
+            byte[] bytes = System.Text.Encoding.ASCII.GetBytes("Vulkan");
+            window = GLFW.glfwCreateWindow((int)WIDTH, (int)HEIGHT, bytes, IntPtr.Zero, IntPtr.Zero);
+
+            if (window == IntPtr.Zero)
+            {
+                GLFW.glfwTerminate();
+                throw new Exception("Unable to create glfw window");
+            }
         }
 
         private void InitVulkan()
@@ -49,18 +57,11 @@ namespace KHRRTXHelloTriangle
         }
 
         private void MainLoop()
-        {
-            bool isClosing = false;
-            window.FormClosing += (s, e) =>
+        {           
+            while(GLFW.glfwWindowShouldClose(window) == GLFW.GLFW_FALSE)
             {
-                isClosing = true;
-            };
-
-            while (!isClosing)
-            {
-                Application.DoEvents();
-
                 this.DrawFrame();
+                GLFW.glfwPollEvents();
             }
 
             Helpers.CheckErrors(VulkanNative.vkDeviceWaitIdle(this.device));
@@ -99,8 +100,8 @@ namespace KHRRTXHelloTriangle
 
             VulkanNative.vkDestroyInstance(this.instance, null);
 
-            this.window.Dispose();
-            this.window.Close();
+            GLFW.glfwDestroyWindow(window);
+            GLFW.glfwTerminate();
         }
 
         public void Run()

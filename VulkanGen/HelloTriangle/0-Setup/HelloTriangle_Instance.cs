@@ -37,13 +37,9 @@ namespace KHRRTXHelloTriangle
             // Extensions
             this.GetAllInstanceExtensionsAvailables();
 
-            IntPtr* extensionsToBytesArray = stackalloc IntPtr[extensions.Length];
-            for (int i = 0; i < extensions.Length; i++)
-            {
-                extensionsToBytesArray[i] = Marshal.StringToHGlobalAnsi(extensions[i]);
-            }
-            createInfo.enabledExtensionCount = (uint)extensions.Length;
-            createInfo.ppEnabledExtensionNames = (byte**)extensionsToBytesArray;
+            byte** glfwExtensions = GLFW.glfwGetRequiredInstanceExtensions(out uint glfwExtensionCount);
+            createInfo.enabledExtensionCount = glfwExtensionCount;
+            createInfo.ppEnabledExtensionNames = glfwExtensions;
 
             // Validation layers
 #if DEBUG

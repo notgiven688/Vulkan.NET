@@ -12,17 +12,12 @@ namespace KHRRTXHelloTriangle
 
         private void CreateSurface()
         {
-            VkWin32SurfaceCreateInfoKHR createInfo = new VkWin32SurfaceCreateInfoKHR()
-            {
-                sType = VkStructureType.VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-                hwnd = window.Handle,
-                hinstance = Process.GetCurrentProcess().Handle,
-            };
+            var result = GLFW.glfwCreateWindowSurface(this.instance, window, (VkAllocationCallbacks*)0, out surface);
 
-            fixed (VkSurfaceKHR* surfacePtr = &surface)
+            if(result != VkResult.VK_SUCCESS)
             {
-                Helpers.CheckErrors(VulkanNative.vkCreateWin32SurfaceKHR(instance, &createInfo, null, surfacePtr));
-            }
+                throw new Exception("Could not create window surface");
+            }        
         }
     }
 }
